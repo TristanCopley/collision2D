@@ -1,14 +1,4 @@
-let c = document.getElementById('canvas');
-let ctx = c.getContext('2d');
-
-c.width = window.innerWidth;
-c.height = window.innerHeight;
-
-
-let dt = 0.0;
-let oldTimeStamp = 0.0;
-
-class simplePhysics {
+class simpleCollision2D {
 
     constructor() {
 
@@ -122,23 +112,23 @@ class simplePhysics {
 
     }
 
-    updatePosition(object, friction) {
+    updatePosition(entity, friction) {
 
-        let temp = object.motion.position.current.x;
-        object.motion.position.current.x = (2 - friction[0]) * object.motion.position.current.x - (1 - friction[0]) * object.motion.position.old.x + object.motion.position.acceleration.x;
-        object.motion.position.old.x = temp;
+        let temp = entity.motion.position.current.x;
+        entity.motion.position.current.x = (2 - friction[0]) * entity.motion.position.current.x - (1 - friction[0]) * entity.motion.position.old.x + entity.motion.position.acceleration.x;
+        entity.motion.position.old.x = temp;
 
-        temp = object.motion.position.current.y;
-        object.motion.position.current.y = (2 - friction[1]) * object.motion.position.current.y - (1 - friction[1]) * object.motion.position.old.y + object.motion.position.acceleration.y;
-        object.motion.position.old.y = temp;
+        temp = entity.motion.position.current.y;
+        entity.motion.position.current.y = (2 - friction[1]) * entity.motion.position.current.y - (1 - friction[1]) * entity.motion.position.old.y + entity.motion.position.acceleration.y;
+        entity.motion.position.old.y = temp;
 
-        temp = object.motion.rotation.current;
-        object.motion.rotation.current = (2 - friction[2]) * object.motion.rotation.current - (1 - friction[2]) * object.motion.rotation.old + object.motion.rotation.acceleration;
-        object.motion.rotation.old = temp;
+        temp = entity.motion.rotation.current;
+        entity.motion.rotation.current = (2 - friction[2]) * entity.motion.rotation.current - (1 - friction[2]) * entity.motion.rotation.old + entity.motion.rotation.acceleration;
+        entity.motion.rotation.old = temp;
 
-        object.motion.position.acceleration.x = 0;
-        object.motion.position.acceleration.y = 0;
-        object.motion.rotation.acceleration = 0;
+        entity.motion.position.acceleration.x = 0;
+        entity.motion.position.acceleration.y = 0;
+        entity.motion.rotation.acceleration = 0;
 
     }
 
@@ -207,30 +197,30 @@ class simplePhysics {
 
     }
 
-    drawGeometry(geometry) {
+    drawGeometry(geometry, context) {
 
         let vertices = geometry.vertices;
         let rotation = geometry.motion.rotation.current;
         let x = geometry.motion.position.current.x;
         let y = geometry.motion.position.current.y;
 
-        ctx.beginPath();
+        context.beginPath();
 
         let len = vertices.length;
 
         let p = vertices[0];
-        ctx.moveTo(x + p[0] * Math.cos(rotation) - p[1] * Math.sin(rotation), y + p[1] * Math.cos(rotation) + p[0] * Math.sin(rotation));
+        context.moveTo(x + p[0] * Math.cos(rotation) - p[1] * Math.sin(rotation), y + p[1] * Math.cos(rotation) + p[0] * Math.sin(rotation));
 
         for (let i = 0; i < len; i++) {
 
             let p = vertices[(i + 1) % len];
 
-            ctx.lineTo(x + p[0] * Math.cos(rotation) - p[1] * Math.sin(rotation), y + p[1] * Math.cos(rotation) + p[0] * Math.sin(rotation));
-            ctx.stroke();
+            context.lineTo(x + p[0] * Math.cos(rotation) - p[1] * Math.sin(rotation), y + p[1] * Math.cos(rotation) + p[0] * Math.sin(rotation));
+            context.stroke();
 
         }
 
-        ctx.fill();
+        context.fill();
 
     }
 
@@ -313,50 +303,3 @@ class simplePhysics {
     }
 
 }
-
-let p = new simplePhysics();
-
-let a = new p.entity(p.meshPrefabs.mesh1);
-let b = new p.entity(p.meshPrefabs.mesh2);
-
-b.motion.position.acceleration.x = 10;
-b.motion.position.acceleration.y = 5;
-a.motion.rotation.acceleration = 5;
-b.motion.rotation.acceleration = 0.05;
-a.motion.position.current.x = 900;
-a.motion.position.current.y = 540;
-a.motion.position.old.x = 900;
-a.motion.position.old.y = 540;
-
-a.motion.position.acceleration.x = -10;
-a.motion.position.acceleration.y = -5;
-
-
-// Loop
-function loop(timeStamp) {
-
-    // Calculate the number of seconds passed since the last frame
-    dt = timeStamp - oldTimeStamp;
-    oldTimeStamp = timeStamp;
-
-    ctx.clearRect(0 ,0, c.width, c.height);
-
-    ctx.strokeStyle = 'pink';
-    ctx.fillStyle = 'red';
-    ctx.lineWidth = 2;
-
-    p.drawGeometry(a);
-    p.drawGeometry(b);
-
-    p.updatePosition(a, [0.01, 0.01, 0.01]);
-    p.updatePosition(b, [0.01, 0.01, 0.01]);
-
-    p.collide(a, b);
-
-    window.requestAnimationFrame(loop);
-
-}
-
-// Start gameLoop
-loop(0);
-
