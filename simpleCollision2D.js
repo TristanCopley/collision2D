@@ -1,4 +1,4 @@
-class simpleCollision2D {
+class SimpleCollision2D {
 
     constructor() {
 
